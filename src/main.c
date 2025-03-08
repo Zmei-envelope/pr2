@@ -1,46 +1,53 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "../include/users.h"
-#include "../include/processes.h"
-#include "../include/log.h"
-#include "../include/errors.h"
-#include "../include/help.h"
+#include "users.h"
+#include "processes.h"
+#include "log.h"
+#include "errors.h"
+#include "help.h"
 
 int main(int argc, char *argv[]) {
     int opt;
-    char *log_path = NULL;  // Путь для перенаправления stdout
-    char *errors_path = NULL;  // Путь для перенаправления stderr
+    int show_users=0, show_pr=0;
+    char *log_path = NULL;
+    char *errors_path = NULL;
 
     while ((opt = getopt(argc, argv, "uphl:e:")) != -1) {
         switch (opt) {
             case 'u':
-                if (log_path) {
-                    redirect_output_to_file(log_path);  // Перенаправляем stdout в файл
-                }
-                print_users_sorted();  // Выводим список пользователей
+                show_users=1;
                 break;
             case 'p':
-                if (log_path) {
-                    redirect_output_to_file(log_path);  // Перенаправляем stdout в файл
-                }
-                print_processes_sorted();  // Выводим список процессов
+                show_pr=1;
                 break;
             case 'h':
-                print_help();  // Выводим справку
+                help();
                 return 0;
             case 'l':
-                log_path = optarg;  // Сохраняем путь для stdout
+                log_path = optarg;
                 break;
             case 'e':
-                errors_path = optarg;  // Сохраняем путь для stderr
-                redirect_errors_to_file(errors_path);  // Перенаправляем stderr в файл
+                errors_path = optarg;
+                errors_to_file(errors_path);
                 break;
             default:
                 fprintf(stderr, "Unknown option: %c\n", opt);
-                print_help();
+                help();
                 return 1;
         }
+    }
+
+    if (log_path) {
+        log_to_file(log_path);
+    }
+
+    if (show_users==1){
+        users();
+    }
+
+    if (show_pr==1){
+        processes();
     }
 
     return 0;
